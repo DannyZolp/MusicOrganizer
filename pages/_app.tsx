@@ -83,18 +83,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Music Organizer</title>
       </Head>
-      <ToastContainer />
-      <main style={{ minHeight: "calc(100vh - 150px)" }}>
-        <Component {...pageProps} supabase={supabase} />
-      </main>
-      <footer className="footer" style={{ height: "50px" }}>
-        <div className="content has-text-centered">
-          <p>
-            <strong>Music Organizer</strong> made with love by{" "}
-            <a href="https://dannyzolp.com">Danny Zolp</a> | <a href="https://github.com/DannyZolp/MusicOrganizer">View Source Code</a>
-          </p>
-        </div>
-      </footer>
+      <Component {...pageProps} supabase={supabase} />
     </>
   );
 }
