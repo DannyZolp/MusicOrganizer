@@ -2,7 +2,7 @@
 <project name="MusicOrganizer" id="Project-1f03" database="PostgreSQL" >
 	<schema name="auth" >
 		<table name="users" prior="tbl" >
-			<comment><![CDATA[This is a default schema provided by Supabase. Please do not include this when cloning the schema to the cloud (it is only used to make DbSchema shut it's fucking mouth).]]></comment>
+			<comment><![CDATA[This is a default schema provided by Supabase. Please do not include this when cloning the schema to the cloud (it is only used to make DbSchema shut it's mouth).]]></comment>
 			<column name="id" type="uuid" jt="102" mandatory="y" >
 				<defo><![CDATA[uuid_generate_v4()]]></defo>
 			</column>
