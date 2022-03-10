@@ -1,0 +1,32 @@
+@media print {
+  @page {
+    size: 11in 8.5in;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0.28in 0.31in 0.35in 0.25in;
+  }
+
+  .qr {
+    .column {
+      max-width: 2.56in;
+      max-height: 1.03in;
+      padding: 0.2rem;
+
+      svg {
+        min-width: 75px;
+      }
+
+      .text {
+        max-height: 0.7in;
+        overflow: hidden;
+
+        code {
+          color: black;
+        }
+      }
+    }
+  }
+}

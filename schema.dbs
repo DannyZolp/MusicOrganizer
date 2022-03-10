@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="MusicOrganizer" id="Project-1f03" database="PostgreSQL" >
+	<schema name="auth" >
+		<table name="users" prior="tbl" >
+			<comment><![CDATA[This is a default schema provided by Supabase. Please do not include this when cloning the schema to the cloud (it is only used to make DbSchema shut it's fucking mouth).]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="email" type="varchar" length="100" jt="12" mandatory="y" />
+			<index name="pk_users_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="unq_users_id" unique="UNIQUE_KEY" >
+				<column name="id" />
+				<column name="email" />
+			</index>
+		</table>
+	</schema>
+	<schema name="public" >
+		<table name="email_logs" prior="tbl" >
+			<comment><![CDATA[Used to ensure that emails don't get sent more than once for an invite]]></comment>
+			<column name="id" type="integer" jt="4" mandatory="y" />
+			<column name="invite_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The UUID of the invite this is in reference to. Does not have to have a foreign key since email logs are only creatable on trusted platforms.]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<index name="pk_email_logs_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+		</table>
+		<table name="groups" prior="tbl" >
+			<comment><![CDATA[These are groups that a piece can be checked out to. This may be a band or co-curricular group or something of the like, but that is up to the user.]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="name" type="text" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[A short name of the group]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="owner_id" type="uuid" jt="102" mandatory="y" todo="1" >
+				<comment><![CDATA[(deprecated) the owner of the group]]></comment>
+			</column>
+			<column name="description" type="text" jt="12" >
+				<comment><![CDATA[A short description or a few notes about a group.]]></comment>
+			</column>
+			<column name="color" type="text" jt="12" mandatory="y" >
+				<comment><![CDATA[The HEX color associated with the group. This is used in places around the app like the Pie Chart on the Dashboard.]]></comment>
+			</column>
+			<column name="organization_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The organization the group is associated with it.]]></comment>
+			</column>
+			<index name="pk_groups_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="organization_id" pk="id" />
+			</fk>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="owner_id" pk="id" />
+			</fk>
+		</table>
+		<table name="invites" prior="tbl" >
+			<comment><![CDATA[These are invites to an organization for library maintainers are able to collaborate.]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="email" type="text" jt="12" mandatory="y" >
+				<comment><![CDATA[The email address that is being "invited to". This is the email address that an invite will be sent to when the "send_invite_email" api route is called.]]></comment>
+			</column>
+			<column name="organization_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[This is the organization that the user is being invited to.]]></comment>
+			</column>
+			<column name="issuer_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[This is the user id of the issuer of the invite. In the current state of the app, this should only be the owner of the organization. This issuer_id should be the same from here to the actual membership if it is ever registered.]]></comment>
+			</column>
+			<column name="org_name" type="text" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[The name of the organization. Since organizations can't be viewed until a user accepts the invite, supplying an organization name makes my life easier.]]></comment>
+			</column>
+			<index name="pk_invites_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="organization_id" pk="id" />
+			</fk>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="issuer_id" pk="id" />
+			</fk>
+		</table>
+		<table name="leases" prior="tbl" >
+			<comment><![CDATA[Leases are an ever-updated log of who has checked out a score. This may help find who has damaged music, or just finding out where a piece went missing.]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="score_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The score that the lease is related to]]></comment>
+			</column>
+			<column name="group_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The group that the score is checked out to]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="returned_at" type="timestamptz" jt="93" >
+				<comment><![CDATA[This will be defined once the score has been checked back in.]]></comment>
+			</column>
+			<column name="owner_id" type="uuid" jt="102" mandatory="y" todo="1" >
+				<comment><![CDATA[(deprecated) the owner of the lease.]]></comment>
+			</column>
+			<column name="organization_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The organization that the lease is related to]]></comment>
+			</column>
+			<index name="pk_leases_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="scores" to_schema="public" to_table="scores" >
+				<fk_column name="score_id" pk="id" />
+			</fk>
+			<fk name="groups" to_schema="public" to_table="groups" >
+				<fk_column name="group_id" pk="id" />
+			</fk>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="organization_id" pk="id" />
+			</fk>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="owner_id" pk="id" />
+			</fk>
+		</table>
+		<table name="memberships" prior="tbl" >
+			<comment><![CDATA[When a user has a membership defined, they will be able to access data associated with that membership/organization. This can be scores, leases, groups, etc. MUST BE DEFINED FOR EVERY PERSON, EVEN OWNERS OF ORGANIZATIONS!!!!]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="issuer_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[This is the user who originally invited someone to the organization. In the current state of the application, this should always be the owner of the organization.]]></comment>
+			</column>
+			<column name="user_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[This is the id of the user that the membership is going into affect for.]]></comment>
+			</column>
+			<column name="organization_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[This is the organization that the membership is going into affect for.]]></comment>
+			</column>
+			<index name="pk_memberships_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="users_issuer" to_schema="auth" to_table="users" >
+				<fk_column name="issuer_id" pk="id" />
+			</fk>
+			<fk name="users_user" to_schema="auth" to_table="users" >
+				<fk_column name="user_id" pk="id" />
+			</fk>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="organization_id" pk="id" />
+			</fk>
+		</table>
+		<table name="organizations" prior="tbl" spec="" >
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="name" type="text" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Name of organization]]></comment>
+			</column>
+			<column name="_location" type="text" jt="12" >
+				<comment><![CDATA[Where the organization is located (this can be an address, city, state, etc.)]]></comment>
+			</column>
+			<column name="description" type="text" jt="12" >
+				<comment><![CDATA[A simple description or notes about an organization]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="owner_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[Owner of the organization]]></comment>
+			</column>
+			<index name="pk_organizations_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="owner_id" pk="id" />
+			</fk>
+		</table>
+		<table name="profiles" prior="tbl" >
+			<comment><![CDATA[Where we store extra user data (since we can't store it in the auth schema because Supabase can eat my dick)]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[Whatever this ID is, it has to be the same as the user id in the auth.users table.]]></comment>
+			</column>
+			<column name="name" type="text" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Users' display name]]></comment>
+			</column>
+			<column name="default_org_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The default organization that the user wants to load. This will be fetched when there isn't a selected organization in the users' localStorage. For exmaple, this will be the organization loaded whenever a user logs in on a new device.]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="email" type="varchar" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[The email address associated with the users' auth.users column]]></comment>
+			</column>
+			<index name="pk_profiles_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="id" pk="id" />
+				<fk_column name="email" pk="email" />
+			</fk>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="default_org_id" pk="id" />
+			</fk>
+		</table>
+		<table name="scores" prior="tbl" >
+			<comment><![CDATA[Scores are the main piece of structured data in the application.]]></comment>
+			<column name="id" type="uuid" jt="102" mandatory="y" >
+				<defo><![CDATA[uuid_generate_v4()]]></defo>
+			</column>
+			<column name="custom_id" type="text" jt="12" mandatory="y" >
+				<comment><![CDATA[This is the ID that the user provides for their score. This may be an ID that is marked on the score in their collection, or something of the like.]]></comment>
+			</column>
+			<column name="name" type="text" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[The name of the score]]></comment>
+			</column>
+			<column name="description" type="text" jt="12" >
+				<comment><![CDATA[A short description or a new notes about a score.]]></comment>
+			</column>
+			<column name="owner_id" type="uuid" jt="102" mandatory="y" todo="1" >
+				<comment><![CDATA[(deprecated) the owner of the score.]]></comment>
+			</column>
+			<column name="created_at" type="timestamptz" jt="93" mandatory="y" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="author" type="text" jt="12" mandatory="y" >
+				<comment><![CDATA[The author of the score. This may also be the arranger or something of the like, but it doesn't really matter.]]></comment>
+			</column>
+			<column name="_level" type="text" jt="12" mandatory="y" >
+				<comment><![CDATA[The difficulty level of the piece.]]></comment>
+			</column>
+			<column name="organization_id" type="uuid" jt="102" mandatory="y" >
+				<comment><![CDATA[The organization that this score is related to]]></comment>
+			</column>
+			<index name="pk_scores_id" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="organizations" to_schema="public" to_table="organizations" >
+				<fk_column name="organization_id" pk="id" />
+			</fk>
+			<fk name="users" to_schema="auth" to_table="users" >
+				<fk_column name="owner_id" pk="id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-1e95" show_relation="columns" >
+		<entity schema="public" name="email_logs" color="C1D8EE" x="48" y="48" />
+		<entity schema="public" name="groups" color="C1D8EE" x="608" y="128" />
+		<entity schema="public" name="invites" color="C1D8EE" x="544" y="432" />
+		<entity schema="public" name="leases" color="C1D8EE" x="784" y="512" />
+		<entity schema="public" name="memberships" color="C1D8EE" x="240" y="640" />
+		<entity schema="public" name="organizations" color="C1D8EE" x="352" y="448" />
+		<entity schema="public" name="profiles" color="C1D8EE" x="224" y="304" />
+		<entity schema="public" name="scores" color="C1D8EE" x="816" y="128" />
+		<entity schema="auth" name="users" color="C1D8EE" x="480" y="64" />
+	</layout>
+</project>

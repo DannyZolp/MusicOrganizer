@@ -1,0 +1,36 @@
+@charset "utf-8";
+
+// Import a Google Font
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Poppins:ital,wght@1,200&display=swap");
+
+// // Set your brand colors
+// $purple: #8A4D76;
+// $pink: #FA7C91;
+// $brown: #757763;
+// $beige-light: #D0D1CD;
+// $beige-lighter: #EFF0EB;
+
+// // Update Bulma's global variables
+$family-sans-serif: "Nunito", sans-serif;
+// $grey-dark: $brown;
+// $grey-light: $beige-light;
+$primary: #893dc3;
+$link: #e23dbe;
+$link-dark: #e23dbe;
+
+.modal-background {
+  background-color: rgba(50, 50, 50, 0.86) !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.title-logo {
+  font-family: "Poppins", sans-serif;
+}
+
+// Import only what you need from Bulma
+@import "bulma/bulma.sass";
+@import "bulma-prefers-dark/bulma-prefers-dark.sass";
